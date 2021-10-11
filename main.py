@@ -23,6 +23,7 @@ def check_current_user(x):
 #login
 def login():
     print("Welcome to the Event Ticketing System!")
+    
     username = input("To login, please enter your username: ")
     #Check if username is in the database
     if username in [i[0] for i in users]:
@@ -34,7 +35,9 @@ def login():
         options(users[index][1], username)
 
     #else print error message
-
+    else:
+        print("Invalid: User does not exist")
+        login()
 
 #logout
 def logout():
@@ -42,17 +45,46 @@ def logout():
     f.close()
 
 #buy   
-def buy():
-    print("How many tickets do you want to buy?: ")
+def buy(x,y):
+    #check if transaction is valid for user
+    if x == "admin" or x == "buy-standard" or x == "full-standard":
+        tickets = input("How many tickets do you want to buy?: ")
 
 
 #sell
-def sell():
+def sell(x,y):
+    #check if transaction is valid for user
+    if x == "admin" or x == "sell-standard" or x == "full-standard":
+        title = input("Please enter event title: ")
+        #check if event title is within 25 chars
+        while(len(title) > 25):
+            print("Error: Event title cannot exceed 25 characters")
+            title = input("Please enter event title (25 chars or less): ")
+        
+        #check if quantity is not over 100
+        quantity = input("Quantity of tickets: ")
+        while(not int(quantity) or int(quantity) > 100):
+            print("Error: Ticket quantity must be 100 or less.")
+            quantity = input("Please enter valid quantity of tickets: ")
 
-    print("")
+        #check if amount per ticket is less than 1000 (fix: check if int or float, valid float)
+        perTicket = input("How much would you like to charge (per ticket)?: ")
+        #while(not float(perTicket) or not int(perTicket)):
+            #perTicket = input("Please enter a valid amount (less than 1000): ")
+            
+        sellerIndex = index_2d(users, x)
+        #write to file
+        f.write("03 "+ title + " " + y + " " + quantity + " " + str(users[sellerIndex][2]) + "\n")
+        print("Successfully put tickets for sale!")
+        options(x,y)      
+
+    else:
+        print("Permission Denied")
+        options(x,y)
+
 
 #refund
-def refund(x):
+def refund(x,y):
     if x == "admin":
         buyer = input("Enter BUYER'S username: ")
         while(not check_current_user(buyer)):
@@ -81,10 +113,10 @@ def refund(x):
         #write to file
         f.write("05 "+ users[buyerIndex][0]+ " " + users[sellerIndex][0] + " " + str(float(credit)) +"\n")
         print("Refund successful!")
-        options(x)
+        options(x,y)
     else:
         print("Permission denied")
-        options(x)
+        options(x,y)
 
 
 #add credit
@@ -151,7 +183,10 @@ def options(x, y):
     session = input("Enter session type [" + "/".join(transactionItems) + "]: ")
 
     if session == "buy":
-        buy()
+        buy(x,y)
+    
+    elif session == "sell":
+        sell(x,y)
     
     elif session == "logout":
         logout()
@@ -169,6 +204,3 @@ def options(x, y):
 
 #main
 login()
-
-
-
