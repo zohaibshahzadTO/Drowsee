@@ -184,7 +184,7 @@ def sell(x,y):
 
         #check if amount per ticket is less than 1000
         perTicket = input("How much would you like to charge (per ticket)?: ")
-        while(not float(perTicket)):
+        while(not float(perTicket) or float(perTicket) > 1000):
             perTicket = input("Please enter a valid amount (less than 1000): ")
             
         sellerIndex = index_2d(users, x)
