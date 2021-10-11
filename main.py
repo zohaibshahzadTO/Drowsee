@@ -4,6 +4,8 @@ import fileinput
 
 #initalize valid users
 users = [["sarah","admin", 1000.00],["sylvie","buy-standard", 2000.00],["zohaib","full-standard", 3000.00]]
+#list of events (event, seller, number of tickets, price)
+events = [["Raptors Game","zohaib",20,50], ["BTS Concert","sarah",5,100],["Blue Jays Game","zohaib",1,25]]
 
 #daily transaction file
 f = open("dailyfile.txt", "w")
@@ -23,6 +25,13 @@ def check_current_user(x):
 
 def check_valid_accountType(x):
     if x != "admin" or "full-standard" or "buy-standard" or "sell-standard":
+        return False
+    
+#check if event exists
+def check_events(x):
+    if x in [i[0] for i in events]:
+        return True
+    else:
         return False
 
 #login
@@ -93,12 +102,69 @@ def createUser(x, y):
         print("Permission Denied")
         options(x, y)
 
-#buy
+#buy   
 def buy(x,y):
+    #initialize var
+    event_index = 0;
+    buyer_credit = users[index_2d(users,y)][2]
     #check if transaction is valid for user
     if x == "admin" or x == "buy-standard" or x == "full-standard":
-        tickets = input("How many tickets do you want to buy?: ")
+        event = input("Enter event name: ")
+        #check if event is current
+        while(not check_events(event)):
+            event = input("The event is not current, please enter a current event name: ")
+            event_index = index_2d(events,event)
+        
+        tickets = input("Enter a number of tickets: ")
+        if x == "full-standard" or x == "buy-standard":
+            #check that they're buying 4 tickets max and the amount of tickets is valid
+            while(not int(tickets) > 4 or events[event_index][2] < int(tickets)):
+                print("You can only purchase a maximum of 4 tickets at a time! There are " + str(events[event_index][2]) + " tickets available.")
+                tickets = input("Please enter a valid number of tickets: ")
+        else:
+            #check if input is int and the amount of tickets is valid
+            while(not int(tickets) or int(events[event_index][2]) < int(tickets)):
+                print("Sorry! There are only " + str(events[event_index][2]) + " tickets available.")
+                tickets = input("Please enter a valid number of tickets: ")
 
+        #check if seller username is valid for event listing
+        seller = input("Enter seller's username: ")
+        while(not check_current_user(seller) or not events[event_index][1] == seller):
+            print("Error: User not found for event name.")
+            seller = input("Please enter a valid username: ")
+        sellerIndex = index_2d(users,seller)
+
+        #tell user total
+        ticket_price = int(events[event_index][3])
+        ticket_total = float(ticket_price * int(tickets))
+        confirm = input("Your total cost is $" + str("{:.2f}".format(ticket_total)) + " ($" + str(ticket_price) + "/ticket). Would you like to confirm your purchase? (Yes/No): ")
+        if confirm == "Yes":
+            if(ticket_price > buyer_credit):
+                print("Sorry! You don't have enough credits to purchase the tickets.")
+                options(x,y)
+            else:
+                #subtract tickets from buyer
+                events[event_index][2] -= int(tickets)
+                #subtract credit from buyer
+                users[sellerIndex][2] += ticket_total
+                #add credit to user
+                buyerIndex = index_2d(users,y)
+                users[buyerIndex][2] -= ticket_total
+
+                #write to file   
+                f.write("04 "+ event + " " + y + " " + str(tickets) + " " + str("{:.2f}".format(users[buyerIndex][2])) + "\n")
+                f.write(event + " " + seller + " " + str(tickets) + " " + str("{:.2f}".format(ticket_price))+ "\n")
+                f.write("03 "+ event + " " + seller + " " + str(tickets) + " " + str("{:.2f}".format(users[sellerIndex][2])) + "\n")
+                print("Successfully bought tickets!")
+                options(x,y)
+
+        else: 
+            print("Transaction Cancelled.")
+            options(x,y)
+    
+    else:
+        print("Permission Denied")
+        options(x,y)   
 
 #sell
 def sell(x,y):
@@ -109,23 +175,23 @@ def sell(x,y):
         while(len(title) > 25):
             print("Error: Event title cannot exceed 25 characters")
             title = input("Please enter event title (25 chars or less): ")
-
+        
         #check if quantity is not over 100
         quantity = input("Quantity of tickets: ")
         while(not int(quantity) or int(quantity) > 100):
             print("Error: Ticket quantity must be 100 or less.")
             quantity = input("Please enter valid quantity of tickets: ")
 
-        #check if amount per ticket is less than 1000 (need to fix: check if int or float, valid float)
+        #check if amount per ticket is less than 1000
         perTicket = input("How much would you like to charge (per ticket)?: ")
-        #while(not float(perTicket) or not int(perTicket)):
-            #perTicket = input("Please enter a valid amount (less than 1000): ")
-
+        while(not float(perTicket)):
+            perTicket = input("Please enter a valid amount (less than 1000): ")
+            
         sellerIndex = index_2d(users, x)
         #write to file
-        f.write("03 "+ title + " " + y + " " + quantity + " " + str(users[sellerIndex][2]) + "\n")
+        f.write("03 "+ title + " " + y + " " + quantity + " " + str("{:.2f}".format(users[sellerIndex][2])) + "\n")
         print("Successfully put tickets for sale!")
-        options(x,y)
+        options(x,y)      
 
     else:
         print("Permission Denied")
