@@ -67,7 +67,7 @@ def sell(x,y):
             print("Error: Ticket quantity must be 100 or less.")
             quantity = input("Please enter valid quantity of tickets: ")
 
-        #check if amount per ticket is less than 1000 (fix: check if int or float, valid float)
+        #check if amount per ticket is less than 1000 (need to fix: check if int or float, valid float)
         perTicket = input("How much would you like to charge (per ticket)?: ")
         #while(not float(perTicket) or not int(perTicket)):
             #perTicket = input("Please enter a valid amount (less than 1000): ")
