@@ -143,7 +143,7 @@ def buy(x,y):
                 print("Sorry! You don't have enough credits to purchase the tickets.")
                 options(x,y)
             else:
-                #subtract tickets from buyer
+                #subtract tickets from seller
                 events[event_index][2] -= int(tickets)
                 #subtract credit from buyer
                 users[sellerIndex][2] += ticket_total
