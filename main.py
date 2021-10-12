@@ -26,7 +26,7 @@ def check_current_user(x):
 def check_valid_accountType(x):
     if x != "admin" or "full-standard" or "buy-standard" or "sell-standard":
         return False
-    
+
 #check if event exists
 def check_events(x):
     if x in [i[0] for i in events]:
@@ -61,14 +61,13 @@ def logout():
 # Create a User
 def createUser(x, y):
     if x == "admin":
+        # Every new user will have a starting balance of 100.00
         startingCredit = 100.00
         newUser = input('Please enter the username for this new account: ')
 
         while(check_current_user(newUser)):
                 newUser = input("Please enter a username that isn't already taken: ")
                 check_current_user(newUser)
-
-        index = index_2d(users, newUser)
 
         print("""Choose an option:
         - admin
@@ -92,8 +91,8 @@ def createUser(x, y):
         users.append([newUser, accountType, startingCredit])
         print(users)
 
-        # Write to file
-        f.write("02" + " " + newUser + " " + accountType + " " + str(float(startingCredit)) + "\n")
+        # Write to daily transaction file
+        f.write("01" + " " + newUser + " " + accountType + " " + str(float(startingCredit)) + "\n")
 
         # New user created
         print("New user created successfully!")
@@ -102,7 +101,43 @@ def createUser(x, y):
         print("Permission Denied")
         options(x, y)
 
-#buy   
+# Delete a user
+def deleteUser(x, y):
+    currentUser = y
+    print("Here is a list of the current users within the event ticketing system in the following format: " + "\n")
+    print("Name || Account Type || Credit")
+    for i in range(len(users)):
+        for j in range(len(users[i])):
+            print(users[i][j], end=' ')
+        print()
+    userSelected = input("\nPlease enter the name of the user you want to delete from the system: ")
+
+    while(not check_current_user(userSelected)):
+        userSelected = input("Please select a VALID name of the user that you want to delete from the system: ")
+        check_current_user(userSelected)
+
+    if (userSelected == currentUser):
+        print("You cannot delete the current user that's logged in at this time.")
+        print("We'll now be re-directing you to the main menu.")
+        options(x, y)
+
+    deleteUserIndex = index_2d(users, userSelected)
+
+    # Write to daily transaction file
+    f.write("02" + " " + userSelected + " " + users[deleteUserIndex][1] + " " + str(float(users[deleteUserIndex][2])) + "\n")
+
+    users.pop(deleteUserIndex)
+    print("Thank you. We've deleted that user. Here is a list of current users in the system: " + "\n")
+
+    print("Name || Account Type || Credit")
+    for i in range(len(users)):
+        for j in range(len(users[i])):
+            print(users[i][j], end=' ')
+        print()
+    print("\nThank you. We'll now be re-directing you back to the main menu.")
+    options(x, y)
+
+#buy
 def buy(x,y):
     #initialize var
     event_index = 0;
@@ -114,7 +149,7 @@ def buy(x,y):
         while(not check_events(event)):
             event = input("The event is not current, please enter a current event name: ")
             event_index = index_2d(events,event)
-        
+
         tickets = input("Enter a number of tickets: ")
         if x == "full-standard" or x == "buy-standard":
             #check that they're buying 4 tickets max and the amount of tickets is valid
@@ -143,7 +178,7 @@ def buy(x,y):
                 print("Sorry! You don't have enough credits to purchase the tickets.")
                 options(x,y)
             else:
-                #subtract tickets from buyer
+                #subtract tickets from seller
                 events[event_index][2] -= int(tickets)
                 #subtract credit from buyer
                 users[sellerIndex][2] += ticket_total
@@ -151,20 +186,20 @@ def buy(x,y):
                 buyerIndex = index_2d(users,y)
                 users[buyerIndex][2] -= ticket_total
 
-                #write to file   
+                #write to file
                 f.write("04 "+ event + " " + y + " " + str(tickets) + " " + str("{:.2f}".format(users[buyerIndex][2])) + "\n")
                 f.write(event + " " + seller + " " + str(tickets) + " " + str("{:.2f}".format(ticket_price))+ "\n")
                 f.write("03 "+ event + " " + seller + " " + str(tickets) + " " + str("{:.2f}".format(users[sellerIndex][2])) + "\n")
                 print("Successfully bought tickets!")
                 options(x,y)
 
-        else: 
+        else:
             print("Transaction Cancelled.")
             options(x,y)
-    
+
     else:
         print("Permission Denied")
-        options(x,y)   
+        options(x,y)
 
 #sell
 def sell(x,y):
@@ -175,7 +210,7 @@ def sell(x,y):
         while(len(title) > 25):
             print("Error: Event title cannot exceed 25 characters")
             title = input("Please enter event title (25 chars or less): ")
-        
+
         #check if quantity is not over 100
         quantity = input("Quantity of tickets: ")
         while(not int(quantity) or int(quantity) > 100):
@@ -186,12 +221,12 @@ def sell(x,y):
         perTicket = input("How much would you like to charge (per ticket)?: ")
         while(not float(perTicket) or float(perTicket) > 1000):
             perTicket = input("Please enter a valid amount (less than 1000): ")
-            
+
         sellerIndex = index_2d(users, x)
         #write to file
         f.write("03 "+ title + " " + y + " " + quantity + " " + str("{:.2f}".format(users[sellerIndex][2])) + "\n")
         print("Successfully put tickets for sale!")
-        options(x,y)      
+        options(x,y)
 
     else:
         print("Permission Denied")
@@ -308,6 +343,9 @@ def options(x, y):
 
     elif session == "create":
         createUser(userType, userName)
+
+    elif session == "delete":
+        deleteUser(userType, userName)
 
     elif session == "refund":
         refund(userType)
