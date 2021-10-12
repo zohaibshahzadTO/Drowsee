@@ -147,7 +147,7 @@ def deleteUser(x, y):
     print("\nThank you. We'll now be re-directing you back to the main menu.")
     options(x, y)
 
-#buy
+#Buy transaction - buy a ticket for a current event
 def buy(x,y):
     #initialize var
     event_index = 0;
@@ -211,7 +211,7 @@ def buy(x,y):
         print("Permission Denied")
         options(x,y)
 
-#sell
+#Sell transaction - sell a ticket for a current event
 def sell(x,y):
     #check if transaction is valid for user
     if x == "admin" or x == "sell-standard" or x == "full-standard":
