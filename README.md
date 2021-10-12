@@ -1,2 +1,5 @@
 # Drowsee
-Event Ticketing System *More to come later*
+
+Event Ticketing System 
+
+See Design Document!
