@@ -17,11 +17,21 @@ def index_2d(myList, v):
         if v in x:
             return i
 
+#checks if user is in array
 def check_current_user(x):
     if x in [i[0] for i in users]:
         return True
     else:
         return False
+
+#check if input is a number
+def check_number_input(x):
+    try:
+        float(x)
+        return True
+    except ValueError:
+        return False
+
 
 def check_valid_accountType(x):
     if x != "admin" or "full-standard" or "buy-standard" or "sell-standard":
@@ -235,23 +245,31 @@ def sell(x,y):
 
 #refund
 def refund(x,y):
+    #if user is amdin
     if x == "admin":
+        #read buyer username and check that it is valid
         buyer = input("Enter BUYER'S username: ")
         while(not check_current_user(buyer)):
             buyer = input("Please enter a valid username: ")
             check_current_user(buyer)
+        
+        #get index of buyer
         buyerIndex = index_2d(users, buyer)
 
+        #read buyer username and check that it is valid
         seller = input("Enter SELLER'S username: ")
         while(not check_current_user(seller)):
             seller = input("Please enter a valid username: ")
             check_current_user(seller)
-
+        
+        #get index of seller 
         sellerIndex = index_2d(users, seller)
 
+        #read amount of credit and check that it is valid
         credit = input("Enter amount of credit to refund: ")
-        while (not float(credit)):
-            credit = input("Enter a valid amount of credit to refund: ")
+        while (not check_number_input(credit)):
+            credit = input("Enter a valid amount of credit to add: ")
+            check_number_input(credit)
 
         #do the refund
         #new buyer balance
@@ -264,6 +282,8 @@ def refund(x,y):
         f.write("05 "+ users[buyerIndex][0]+ " " + users[sellerIndex][0] + " " + str(float(credit)) +"\n")
         print("Refund successful!")
         options(x,y)
+    
+    #only admin can do a refund, reject other users
     else:
         print("Permission denied")
         options(x,y)
@@ -271,45 +291,61 @@ def refund(x,y):
 
 #add credit
 def addCredit(x, y):
+    #if user is amdin
     if x == "admin":
+        #read username and check that it is valid
         userName = input("Enter username to add credit to: ")
         while(not check_current_user(userName)):
             userName = input("Please enter a valid username to add credit to: ")
             check_current_user(userName)
 
+        #get index of user
         index = index_2d(users, userName)
 
+        #read amount of credit and check that it is valid
         credit = input("Enter amount of credit to add: ")
-        while (not float(credit)):
+        while (not check_number_input(credit)):
             credit = input("Enter a valid amount of credit to add: ")
+            check_number_input(credit)
 
+        #check that amount does not exceed 1000
         while (float(credit) > 1000.00):
             print("Amount must not be more than $1000.00")
             credit = input("Enter amount of credit to add: ")
 
-        #add the credit
+        #add the credit to user's account
         users[index][2] = users[index][2] + float(credit)
 
         #write to file
         f.write("06 " + users[index][0] + " AA " + str(float(credit))+ "\n")
 
-        #success
         print("Credit added successfully!")
         options(x,y)
-
+    
+    #if user is full-standard
     elif x == "full-standard":
+        #read amount of credit and check that it is valid
         credit = input("Enter amount of credit to add: ")
+        while (not check_number_input(credit)):
+            credit = input("Enter a valid amount of credit to add: ")
+            check_number_input(credit)
+
+        #check that amount does not exceed 1000
         while (float(credit) > 1000.00):
             print("Amount must not be more than $1000.00")
             credit = input("Enter amount of credit to add: ")
 
-        #add the credit
+        #add the credit to user's account
         index = index_2d(users, y)
         users[index][2] = users[index][2] + float(credit)
+        
         #wrtie to file
         f.write("06 " + y + " FS " + str(float(credit)))
+        
         print("Credit added successfully!")
         options(x,y)
+    
+    #only admin and full-standard can do a refund, reject other users
     else:
         print("Permission denied")
         options(x,y)
@@ -348,14 +384,14 @@ def options(x, y):
         deleteUser(userType, userName)
 
     elif session == "refund":
-        refund(userType)
+        refund(userType, userName)
 
     elif session == "addcredit":
         addCredit(userType, userName)
 
     else:
         print("Please enter a valid session type or type logout")
-        options(userType)
+        options(userType, userName)
 
 
 #main
